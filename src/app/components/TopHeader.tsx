@@ -307,7 +307,7 @@ export function TopHeader({
 
                   {/* Create quotation */}
                   <button
-                    onClick={() => navigate('/quotation')}
+                    onClick={() => navigate('/quotations')}
                     className="flex items-center gap-4 px-4 py-2 hover:bg-accent transition-colors text-left"
                   >
                     <div className="flex items-center justify-center p-2 rounded-lg shrink-0">

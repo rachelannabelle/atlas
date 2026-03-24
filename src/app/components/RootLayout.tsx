@@ -40,7 +40,7 @@ export function RootLayout() {
         setSelectedScholar(moduleName);
       }
     } else if (location.pathname === '/' || location.pathname.startsWith('/chat/')) {
-      // Only reset module if navigating to root chat (not documents/search/quotation)
+      // Only reset module if navigating to root chat (not documents/search/quotations)
       if (!selectedModule || location.pathname === '/') {
         // Keep module context if navigating to a chat from module
       }
@@ -131,7 +131,7 @@ export function RootLayout() {
   // Determine current view from URL for Navigation component
   const currentView = location.pathname.startsWith('/documents')
     ? 'documents' as const
-    : location.pathname.startsWith('/quotation')
+    : location.pathname.startsWith('/quotations')
     ? 'quotation' as const
     : location.pathname.startsWith('/search')
     ? 'search' as const

@@ -56,7 +56,7 @@ export const router = createBrowserRouter([
       // Other views
       { path: 'documents', Component: DocumentsPage },
       { path: 'search', Component: SearchPage },
-      { path: 'quotation', Component: QuotationPage },
+      { path: 'quotations', Component: QuotationPage },
 
       // Catch-all
       { path: '*', Component: ChatPage },
