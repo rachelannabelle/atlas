@@ -1,4 +1,4 @@
-import { ArrowRight, Paperclip, Copy, ThumbsUp, ThumbsDown, Pencil, MoreHorizontal, Trash2, FileSpreadsheet, X, BookOpen, Layers, FolderSearch, GitFork } from "lucide-react";
+import { ArrowRight, Paperclip, Copy, ThumbsUp, ThumbsDown, Pencil, FileSpreadsheet, X, BookOpen, Layers, FolderSearch, GitFork, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { useState, useRef, useEffect } from "react";
@@ -7,19 +7,13 @@ import { ChainOfThought } from "./ChainOfThought";
 import { ExcavationScheduleList } from "./ExcavationScheduleList";
 import { toast } from "sonner";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "./ui/dialog";
-import { SafeButton } from "./ui/safe-elements";
+import { usePrototypeConfig } from "../prototype/PrototypeConfigContext";
 
 interface ChatInterfaceProps {
   selectedBuilding: string;
@@ -55,7 +49,6 @@ export function ChatInterface({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [textareaHeight, setTextareaHeight] = useState(0);
-  const [selectedView, setSelectedView] = useState<'questions' | 'chats'>('questions');
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down' | null>>({});
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -64,6 +57,7 @@ export function ChatInterface({
   const [showAttachedFile, setShowAttachedFile] = useState(false);
   const [scholarModalOpen, setScholarModalOpen] = useState(false);
   const [operatorModalOpen, setOperatorModalOpen] = useState(false);
+  const { config } = usePrototypeConfig();
   const placeholderText = `Ask me anything about ${selectedScholar.toLowerCase()} for ${selectedBuilding}`;
 
   const selectModule = (name: string) => {
@@ -128,6 +122,12 @@ export function ChatInterface({
 
   const promptSuggestions = getPromptSuggestions();
 
+  const normalizeInput = (value: string) => value.trim().toLowerCase();
+
+  const activeScript = activeChat?.scriptId
+    ? config.chat.scripts.find((script) => script.scriptId === activeChat.scriptId)
+    : null;
+
   const handlePromptClick = (prompt: string) => {
     // Create chat with specific assistant response for "Help me find the best rate"
     if (prompt === "Help me find the best rate") {
@@ -140,7 +140,7 @@ export function ChatInterface({
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
 
-    const trimmedInput = inputValue.trim().toLowerCase();
+    const normalizedInput = normalizeInput(inputValue);
 
     if (activeChat) {
       const userMessage: Message = {
@@ -151,62 +151,20 @@ export function ChatInterface({
       };
       onSendMessage(activeChat.id, userMessage);
 
-      // Special handling for "excavation works"
-      if (trimmedInput === "excavation works" && activeChat.title === "Help me find the best rate") {
-        // Add chain of thought message
-        setTimeout(() => {
-          const chainMessage: Message = {
-            id: `msg-${Date.now()}-chain`,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date(),
-            type: 'chainOfThought',
-            chainSteps: [
-              'Read Schedule_of_Rates2026.xlsx',
-              'Read Schedule_of_Rates2025.xlsx',
-              'Read Schedule_of_Rates2024.xlsx',
-              'Read Schedule_of_Rates2023.xlsx',
-              'Read Schedule_of_Rates2022.xlsx',
-            ],
-          };
-          onSendMessage(activeChat.id, chainMessage);
-        }, 500);
+      const scriptedResponse = activeScript?.turns.find(
+        (turn) => normalizeInput(turn.userInput) === normalizedInput
+      )?.assistantResponse;
+      const assistantCopy = scriptedResponse || activeScript?.fallback || "I'm processing your request...";
 
-        // Add text response
-        setTimeout(() => {
-          const textMessage: Message = {
-            id: `msg-${Date.now()}-text`,
-            role: 'assistant',
-            content: 'I have found excavation works in 2023 and 2022 and these are the schedule items',
-            timestamp: new Date(),
-            type: 'text',
-          };
-          onSendMessage(activeChat.id, textMessage);
-        }, 6500); // After chain of thought completes
-
-        // Add excavation list
-        setTimeout(() => {
-          const listMessage: Message = {
-            id: `msg-${Date.now()}-list`,
-            role: 'assistant',
-            content: '',
-            timestamp: new Date(),
-            type: 'excavationList',
-          };
-          onSendMessage(activeChat.id, listMessage);
-        }, 7000);
-      } else {
-        // Normal assistant response
-        setTimeout(() => {
-          const assistantMessage: Message = {
-            id: `msg-${Date.now()}`,
-            role: 'assistant',
-            content: "I'm processing your request...",
-            timestamp: new Date(),
-          };
-          onSendMessage(activeChat.id, assistantMessage);
-        }, 500);
-      }
+      setTimeout(() => {
+        const assistantMessage: Message = {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          content: assistantCopy,
+          timestamp: new Date(),
+        };
+        onSendMessage(activeChat.id, assistantMessage);
+      }, 500);
     } else {
       onCreateChat(inputValue, "I understand. How can I assist you with that?");
     }
@@ -329,6 +287,12 @@ export function ChatInterface({
         {/* Messages area */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="max-w-3xl mx-auto space-y-6">
+            {activeChat.scriptError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 flex items-center gap-2">
+                <AlertCircle className="size-4 shrink-0" />
+                <span>{activeChat.scriptError}</span>
+              </div>
+            )}
             {activeChat.messages.map((message) => {
               // Handle chain of thought message
               if (message.type === 'chainOfThought' && message.chainSteps) {
@@ -643,132 +607,24 @@ export function ChatInterface({
           </p>
           
           {isInProjectFolder && (
-            <div className="flex gap-2 mt-3">
-              <button 
-                onClick={() => setSelectedView('questions')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedView === 'questions'
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                }`}
-              >
-                Questions
-              </button>
-              <button 
-                onClick={() => setSelectedView('chats')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedView === 'chats'
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                }`}
-              >
-                Chats
-              </button>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-foreground mb-3">Popular Questions</p>
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {promptSuggestions.map((prompt, index) => (
+                  <Card
+                    key={index}
+                    className="cursor-pointer hover:bg-accent transition-colors border-[#e5e5e5]"
+                    onClick={() => handlePromptClick(prompt)}
+                  >
+                    <CardContent className="p-4">
+                      <p className="text-sm text-[#525252] leading-[20px]">{prompt}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
         </div>
-
-        {selectedView === 'questions' && (
-          <div className="grid grid-cols-2 gap-3 w-full">
-            {promptSuggestions.map((prompt, index) => (
-              <Card
-                key={index}
-                className="cursor-pointer hover:bg-accent transition-colors border-[#e5e5e5]"
-                onClick={() => handlePromptClick(prompt)}
-              >
-                <CardContent className="p-4">
-                  <p className="text-sm text-[#525252] leading-[20px]">{prompt}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {selectedView === 'chats' && (
-          <div className="w-full space-y-2">
-            {/* Mock chat items with kebab menu */}
-            <div className="group relative">
-              <button className="w-full px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
-                <p className="font-medium text-sm">Help me find the best rate</p>
-                <p className="text-xs text-muted-foreground mt-0.5">2 hours ago</p>
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SafeButton
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="size-4 text-muted-foreground" />
-                  </SafeButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Pencil className="mr-2 size-4" />
-                    <span>Rename</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                    <Trash2 className="mr-2 size-4 text-destructive" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            <div className="group relative">
-              <button className="w-full px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
-                <p className="font-medium text-sm">Compare rates between companies</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Yesterday</p>
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SafeButton
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="size-4 text-muted-foreground" />
-                  </SafeButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Pencil className="mr-2 size-4" />
-                    <span>Rename</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                    <Trash2 className="mr-2 size-4 text-destructive" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            <div className="group relative">
-              <button className="w-full px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
-                <p className="font-medium text-sm">Schedule items for excavation</p>
-                <p className="text-xs text-muted-foreground mt-0.5">3 days ago</p>
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SafeButton
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="size-4 text-muted-foreground" />
-                  </SafeButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Pencil className="mr-2 size-4" />
-                    <span>Rename</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                    <Trash2 className="mr-2 size-4 text-destructive" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Hidden file input for native file picker */}

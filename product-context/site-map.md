@@ -55,7 +55,7 @@ This document outlines the site structure and navigation architecture for the Ai
 - **CTAs to Navigate Here:**
   - Avatar dropdown menu → "Help" menu item
 - **Access Level:** Secondary navigation
-- **Notes:** Currently links to an external FAQ page managed on a separate CMS
+- **Notes:** Currently links to an external FAQ page managed on a separate CMS: `https://primustech.freshdesk.com/support/home`
 
 #### 7. Settings
 - **Route:** `/settings`
@@ -68,26 +68,31 @@ This document outlines the site structure and navigation architecture for the Ai
 
 ## Navigation Patterns
 
-### Primary Navigation (Top Nav Header)
+### L0 Primary Navigation (Top Nav Header)
 - Logo & AiBE text
 - "+ New chat" button
 - Knowledge Base link
 - Quotations link
 - Reports link
 - Avatar (dropdown trigger)
+--> Terms and Policies
+--> Help
+--> Settings
 
-### Secondary Navigation (Avatar Dropdown)
-- Terms and Policies
-- Help
-- Settings
+### L0 Page
+- Chat page is the home page
 
 ---
 
 ## L1 Pages (Sub-pages)
-
-> **Note:** L1 pages will be added here as the architecture develops.
-
----
+### L1 Secondary navigation (Contextual to what page the user is on)
+- Chat Page: Left Nav side bar, allows user to navigate to different chats in the chat history
+- Knowledge Base Page: None 
+- Quotations Page: None
+- Reports page: None
+- Terms and Policies: None
+- Help: None
+- Settings: None
 
 ## L2+ Pages (Deeper Navigation)
 

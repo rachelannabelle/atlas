@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { ChevronFirst, ChevronLast, Search } from "lucide-react";
+import { ChevronFirst, ChevronLast, Search, Info } from "lucide-react";
 import type { Chat } from "../types";
+import { usePrototypeConfig } from "../prototype/PrototypeConfigContext";
 
 interface ChatL1PrimaryNavigationProps {
   chats: Chat[];
   activeChatId: string | null;
-  selectedBuilding: string;
   onChatSelect: (chatId: string) => void;
 }
 
@@ -32,13 +32,7 @@ export function ChatL1PrimaryNavigation({
 }: ChatL1PrimaryNavigationProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const fallbackItems = [
-    "What are my created work requests?",
-    "What are all my in progress work orders?",
-    "What are the rates of pipe replacement works",
-    "List me all the SoR items for excavations works",
-  ];
+  const { config } = usePrototypeConfig();
 
   const filteredChats = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -69,6 +63,8 @@ export function ChatL1PrimaryNavigation({
     );
   }
 
+  const showEmptyState = config.chat.leftNavHistory.emptyStateEnabled || filteredChats.length === 0;
+
   return (
     <aside className="w-[337px] min-w-[337px] border-r bg-background h-full p-3">
       <div className="h-full flex flex-col gap-4">
@@ -96,7 +92,7 @@ export function ChatL1PrimaryNavigation({
         </div>
 
         <div className="overflow-y-auto space-y-1 pr-1 flex-1">
-          {filteredChats.length > 0 ? (
+          {!showEmptyState ? (
             filteredChats.map((chat) => {
               const isActive = chat.id === activeChatId;
               return (
@@ -105,30 +101,38 @@ export function ChatL1PrimaryNavigation({
                   type="button"
                   onClick={() => onChatSelect(chat.id)}
                   className={`w-full rounded-md px-3 py-2 text-left transition-colors ${
-                    isActive
-                      ? "bg-sidebar-accent text-black"
-                      : "bg-white text-black hover:bg-accent"
+                    isActive ? "bg-sidebar-accent text-black" : "bg-white text-black hover:bg-accent"
                   }`}
                 >
                   <p className="text-sm truncate">{chat.title}</p>
-                  <p className="text-xs mt-0.5 text-black/70">
-                    {formatDate(chat.createdAt)}
-                  </p>
+                  <p className="text-xs mt-0.5 text-black/70">{formatDate(chat.createdAt)}</p>
                 </button>
               );
             })
           ) : (
-            fallbackItems.map((text) => (
-              <div
-                key={text}
-                className="rounded-md px-3 py-2 bg-white text-sm text-black hover:bg-accent transition-colors"
-              >
-                {text}
+            <div className="rounded-md border border-[#d9d9d9] bg-white p-3">
+              <div className="flex items-start gap-2">
+                <Info className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">No chat history available</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Load a prototype chat script or visit the Help page for setup instructions.
+                  </p>
+                  <a
+                    className="text-xs mt-2 inline-block text-[#3C3DEC] hover:underline"
+                    href={config.chat.leftNavHistory.helpUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open Help
+                  </a>
+                </div>
               </div>
-            ))
+            </div>
           )}
         </div>
       </div>
     </aside>
   );
 }
+

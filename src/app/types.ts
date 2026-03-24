@@ -12,6 +12,8 @@ export interface Chat {
   title: string;
   messages: Message[];
   createdAt: Date;
+  scriptId?: string;
+  scriptError?: string;
 }
 
 export type FileStatus = "uploading" | "processed" | "error";

@@ -1,0 +1,66 @@
+{
+  "topNav": {
+    "brand": {
+      "appName": "AiBE",
+      "roleOptions": ["Technician", "Manager", "Tenant"],
+      "selectedRole": "Technician"
+    },
+    "buildings": {
+      "defaultBuildingId": "your-default-building-id",
+      "items": [
+        { "id": "building-id-1", "label": "Building Name 1" }
+      ]
+    },
+    "quotationsMenu": {
+      "items": [
+        { "id": "quotation-id-1", "title": "Quotation title", "lastUpdatedLabel": "Last updated - " }
+      ],
+      "emptyStateEnabled": false
+    },
+    "reportsMenu": {
+      "items": [
+        { "id": "report-id-1", "title": "Report title", "lastUpdatedLabel": "Last updated - " }
+      ],
+      "emptyStateEnabled": false
+    },
+    "user": {
+      "name": "User Name",
+      "email": "user@email.com",
+      "avatarAcronym": "UN"
+    }
+  },
+  "chat": {
+    "leftNavHistory": {
+      "items": [
+        { "id": "chat-id-1", "createdAt": "2026-01-01T00:00:00.000Z", "scriptId": "script-id-1" }
+      ],
+      "emptyStateEnabled": false,
+      "helpUrl": "https://primustech.freshdesk.com/support/home"
+    },
+    "scripts": [
+      {
+        "scriptId": "script-id-1",
+        "messages": [
+          { "role": "user", "content": "First user prompt (this becomes the left-nav title)" },
+          { "role": "assistant", "content": "First assistant reply" }
+        ],
+        "turns": [
+          { "userInput": "exact scripted input", "assistantResponse": "exact scripted response" }
+        ],
+        "fallback": "Fallback response when no turn matches."
+      }
+    ]
+  },
+  "flowEngine": {
+    "events": [
+      { "id": "evt-id", "name": "onAppLoad", "description": "Flow event description" }
+    ],
+    "actions": [
+      { "id": "act-id", "name": "showSnackbar", "description": "Flow action description" }
+    ],
+    "components": [
+      { "id": "cmp-id", "name": "ChainOfThought", "description": "Flow component description" }
+    ]
+  }
+}
+

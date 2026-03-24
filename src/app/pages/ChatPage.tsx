@@ -23,7 +23,6 @@ export function ChatPage() {
       <ChatL1PrimaryNavigation
         chats={chats}
         activeChatId={activeChatId}
-        selectedBuilding={selectedBuilding}
         onChatSelect={(chatId) => navigate(`/chat/${chatId}`)}
       />
       <div className="flex-1 min-w-0">

@@ -1,0 +1,84 @@
+{
+  "topNav": {
+    "brand": {
+      "appName": "AiBE",
+      "roleOptions": ["Technician", "Manager", "Tenant"],
+      "selectedRole": "Technician"
+    },
+    "buildings": {
+      "defaultBuildingId": "the-gear",
+      "items": [
+        { "id": "the-gear", "label": "The Gear" },
+        { "id": "raffles-city-tower", "label": "Raffles City Tower" },
+        { "id": "mbs-tower-1", "label": "Marina Bay Sands Tower 1" },
+        { "id": "mbs-tower-2", "label": "Marina Bay Sands Tower 2" }
+      ]
+    },
+    "quotationsMenu": {
+      "items": [
+        { "id": "q-001", "title": "Facade Restoration - Tower B", "lastUpdatedLabel": "Last updated 2h ago" },
+        { "id": "q-002", "title": "Chiller Plant Upgrade", "lastUpdatedLabel": "Last updated yesterday" }
+      ],
+      "emptyStateEnabled": false
+    },
+    "reportsMenu": {
+      "items": [
+        { "id": "r-001", "title": "Energy Consumption - March", "lastUpdatedLabel": "Last updated 1d ago" },
+        { "id": "r-002", "title": "Work Order SLA Summary", "lastUpdatedLabel": "Last updated 3d ago" }
+      ],
+      "emptyStateEnabled": false
+    },
+    "user": {
+      "name": "Charlie Tan",
+      "email": "charlie.tan@customer.com",
+      "avatarAcronym": "CT"
+    }
+  },
+  "chat": {
+    "leftNavHistory": {
+      "items": [
+        { "id": "chat-script-1", "createdAt": "2026-03-24T09:30:00.000Z", "scriptId": "sor-best-rate" },
+        { "id": "chat-script-2", "createdAt": "2026-03-23T13:15:00.000Z", "scriptId": "ops-work-orders" }
+      ],
+      "emptyStateEnabled": false,
+      "helpUrl": "https://primustech.freshdesk.com/support/home"
+    },
+    "scripts": [
+      {
+        "scriptId": "sor-best-rate",
+        "messages": [
+          { "role": "user", "content": "Help me find the best rate" },
+          { "role": "assistant", "content": "What schedule item are you looking to generate a quote for?" }
+        ],
+        "turns": [
+          { "userInput": "excavation works", "assistantResponse": "I found the best excavation rates from 2023 and 2022 schedules." },
+          { "userInput": "show me 2023 only", "assistantResponse": "Here are the 2023 excavation schedule items for your review." }
+        ],
+        "fallback": "I do not have a scripted response for that input yet. Please use the guided script."
+      },
+      {
+        "scriptId": "ops-work-orders",
+        "messages": [
+          { "role": "user", "content": "What are all my in progress work orders?" },
+          { "role": "assistant", "content": "You currently have 5 in-progress work orders in this building context." }
+        ],
+        "turns": [
+          { "userInput": "show high priority only", "assistantResponse": "There are 2 high-priority in-progress work orders." }
+        ],
+        "fallback": "I can only answer scripted work-order follow-ups in this prototype."
+      }
+    ]
+  },
+  "flowEngine": {
+    "events": [
+      { "id": "evt-on-app-load", "name": "onAppLoad", "description": "Fires when the app starts and config is loaded." }
+    ],
+    "actions": [
+      { "id": "act-show-snackbar", "name": "showSnackbar", "description": "Future runtime action for snackbars." }
+    ],
+    "components": [
+      { "id": "cmp-chain-of-thought", "name": "ChainOfThought", "description": "Future runtime component mapping for reasoning UI." }
+    ]
+  }
+}
+
