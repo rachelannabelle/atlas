@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronFirst, ChevronLast, Search, Info } from "lucide-react";
 import type { Chat } from "../types";
 import { usePrototypeConfig } from "../prototype/PrototypeConfigContext";
+import { SearchInput } from "./ui/search-input";
 
 interface ChatL1PrimaryNavigationProps {
   chats: Chat[];
@@ -80,16 +81,12 @@ export function ChatL1PrimaryNavigation({
           </button>
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search chats"
-            className="h-10 w-full rounded-md border bg-white pl-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <Search className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        </div>
+        <SearchInput
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search chats"
+          containerClassName="w-full"
+        />
 
         <div className="overflow-y-auto space-y-1 pr-1 flex-1">
           {!showEmptyState ? (

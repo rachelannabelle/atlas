@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { SearchInput } from "./ui/search-input";
 import {
   Table,
   TableBody,
@@ -45,6 +45,14 @@ import ImgFillLight from "../../imports/ImgFillLight";
 import WordIcon from "../../imports/WordIcon";
 import { useAppContext } from "../context";
 import type { FileData, FileStatus, Building, Category } from "../types";
+
+interface StagedFile {
+  id: string;
+  file: File;
+  fileType: FileData["fileType"];
+  uploadProgress: number;
+  category: Category | "";
+}
 
 const mockFiles: FileData[] = [
   {
@@ -190,7 +198,7 @@ const mockFiles: FileData[] = [
 ];
 
 export function Documents() {
-  const { uploadedFiles } = useAppContext();
+  const { uploadedFiles, setUploadedFiles } = useAppContext();
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -198,6 +206,10 @@ export function Documents() {
   const [categoryFilter, setCategoryFilter] = useState<Set<Category>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
+  const [processingProgress, setProcessingProgress] = useState<Map<string, number>>(new Map());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Merge uploaded files with mock files
   const allFiles = useMemo(() => {
@@ -314,6 +326,80 @@ export function Documents() {
     }
   };
 
+  function getFileTypeFromFile(file: File): FileData["fileType"] {
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".pdf")) return "document";
+    if (name.endsWith(".xls") || name.endsWith(".xlsx")) return "spreadsheet";
+    if ([".png", ".jpg", ".jpeg", ".gif", ".webp"].some((ext) => name.endsWith(ext))) return "image";
+    if (name.endsWith(".doc") || name.endsWith(".docx")) return "word";
+    return "document";
+  }
+
+  function addFilesToStaged(files: FileList | File[]) {
+    const newStaged: StagedFile[] = Array.from(files).map((f) => ({
+      id: crypto.randomUUID(),
+      file: f,
+      fileType: getFileTypeFromFile(f),
+      uploadProgress: 0,
+      category: "",
+    }));
+    setStagedFiles((prev) => [...prev, ...newStaged]);
+    newStaged.forEach((sf) => {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        if (progress >= 100) {
+          clearInterval(interval);
+          setStagedFiles((prev) =>
+            prev.map((s) => (s.id === sf.id ? { ...s, uploadProgress: 100 } : s))
+          );
+        } else {
+          setStagedFiles((prev) =>
+            prev.map((s) => (s.id === sf.id ? { ...s, uploadProgress: progress } : s))
+          );
+        }
+      }, 100);
+    });
+  }
+
+  function startProcessingSimulation(fileId: string) {
+    let progress = 10;
+    setProcessingProgress((prev) => new Map(prev).set(fileId, progress));
+    const interval = setInterval(() => {
+      progress += 10;
+      if (progress >= 100) {
+        clearInterval(interval);
+        setProcessingProgress((prev) => {
+          const next = new Map(prev);
+          next.delete(fileId);
+          return next;
+        });
+        setUploadedFiles((prev) =>
+          prev.map((f) => (f.id === fileId ? { ...f, status: "processed" as FileStatus } : f))
+        );
+      } else {
+        setProcessingProgress((prev) => new Map(prev).set(fileId, progress));
+      }
+    }, 300);
+  }
+
+  function handleConfirm() {
+    const newFiles: FileData[] = stagedFiles.map((sf) => ({
+      id: crypto.randomUUID(),
+      fileName: sf.file.name,
+      fileType: sf.fileType,
+      status: "uploading" as FileStatus,
+      building: "The Gear",
+      category: (sf.category || "Operations") as Category,
+      uploadTime: new Date().toLocaleString(),
+      uploadedBy: "You",
+    }));
+    setUploadedFiles((prev) => [...prev, ...newFiles]);
+    setUploadModalOpen(false);
+    setStagedFiles([]);
+    newFiles.forEach((file) => startProcessingSimulation(file.id));
+  }
+
   const handleStatusFilter = (value: string) => {
     setStatusFilter(value);
     resetPagination();
@@ -378,11 +464,11 @@ export function Documents() {
 
       {/* Search and Filters */}
       <div className="flex items-center gap-4 mb-6">
-        <Input
-          placeholder="Filter files..."
+        <SearchInput
+          placeholder="Find my files"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-xs"
+          containerClassName="max-w-xs"
         />
 
         {/* Filters */}
@@ -614,7 +700,11 @@ export function Documents() {
               Delete ({selectedFiles.size})
             </Button>
           ) : (
-            <Button className="bg-[#3C3DEC] hover:bg-[#3C3DEC]/90">
+            <Button
+              variant="outline"
+              className="gap-2 rounded-[8px] border border-[#3C3DEC] text-[#3C3DEC] hover:text-[#3C3DEC] hover:bg-[#3C3DEC]/5 [&_svg]:text-[#3C3DEC]"
+              onClick={() => setUploadModalOpen(true)}
+            >
               <Plus className="size-4" />
               Upload File
             </Button>
@@ -662,7 +752,13 @@ export function Documents() {
                     <div className="flex items-center gap-3">
                       {getFileIcon(file.fileType, file.status)}
                       <span className="font-medium">{file.fileName}</span>
-                      {getStatusIcon(file.status)}
+                      {processingProgress.has(file.id) ? (
+                        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200 pointer-events-none">
+                          Processing {processingProgress.get(file.id)}%
+                        </Badge>
+                      ) : (
+                        getStatusIcon(file.status)
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>{file.building}</TableCell>
@@ -728,6 +824,123 @@ export function Documents() {
           </Button>
         </div>
       </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) addFilesToStaged(e.target.files);
+          e.target.value = "";
+        }}
+      />
+
+      {/* Upload Modal */}
+      <Dialog
+        open={uploadModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUploadModalOpen(false);
+            setStagedFiles([]);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[560px] p-0">
+          <div className="p-6 flex flex-col gap-4">
+            <DialogHeader className="text-left p-0 gap-1">
+              <DialogTitle className="text-[#0f172a] text-[18px] font-semibold leading-[28px]">
+                Upload Files
+              </DialogTitle>
+            </DialogHeader>
+
+            {/* Dropzone */}
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#3C3DEC] hover:bg-[#3C3DEC]/5 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files) addFilesToStaged(e.dataTransfer.files);
+              }}
+            >
+              <p className="text-sm text-muted-foreground text-center">
+                Click to upload or drag and drop
+              </p>
+            </div>
+
+            {/* Staged file list */}
+            {stagedFiles.length > 0 && (
+              <div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto">
+                {stagedFiles.map((sf) => (
+                  <div
+                    key={sf.id}
+                    className="relative flex items-center gap-3 border rounded-lg px-3 py-2 overflow-hidden"
+                  >
+                    {getFileIcon(sf.fileType)}
+                    <span className="text-sm font-medium flex-1 truncate">{sf.file.name}</span>
+                    {sf.uploadProgress >= 100 && (
+                      <Select
+                        value={sf.category}
+                        onValueChange={(val) =>
+                          setStagedFiles((prev) =>
+                            prev.map((s) =>
+                              s.id === sf.id ? { ...s, category: val as Category } : s
+                            )
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-[160px] h-7 text-xs">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Operations">Operations</SelectItem>
+                          <SelectItem value="HR-Certificate">HR-Certificates</SelectItem>
+                          <SelectItem value="Schedule of Rates">Schedule of Rates</SelectItem>
+                          <SelectItem value="Sirius">Sirius</SelectItem>
+                          <SelectItem value="HVAC">HVAC</SelectItem>
+                          <SelectItem value="SOP">SOP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                    {sf.uploadProgress < 100 && (
+                      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gray-100">
+                        <div
+                          className="h-full bg-[#3C3DEC] transition-all duration-100"
+                          style={{ width: `${sf.uploadProgress}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <DialogFooter className="p-0 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setUploadModalOpen(false);
+                  setStagedFiles([]);
+                }}
+                className="px-4 py-2 border-[#e2e8f0]"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirm}
+                disabled={stagedFiles.length === 0}
+                className="px-4 py-2 bg-[#3C3DEC] hover:bg-[#3C3DEC]/90"
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
