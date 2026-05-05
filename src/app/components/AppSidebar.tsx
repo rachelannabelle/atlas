@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router"
-import { ChevronsUpDown, Plus, FolderOpen, BookOpen, Network } from "lucide-react"
+import { ChevronsUpDown, Plus, FolderOpen, BookOpen, Network, Building2 } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -232,10 +232,26 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="pb-0">
-        {/* Collapse toggle top-right */}
-        <div className="flex justify-end px-1 pt-1">
-          <SidebarTrigger />
+      <SidebarHeader className="pb-0 gap-0">
+        {/* HomeDiv — app logo + name + tier, collapses to icon only */}
+        <div className="flex items-center gap-1 px-1 pt-1 pb-1">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 flex-1 min-w-0 rounded-md px-1 py-1 hover:bg-sidebar-accent transition-colors text-left"
+          >
+            <div className="size-7 rounded-md bg-foreground text-background flex items-center justify-center shrink-0">
+              <Building2 className="size-4" />
+            </div>
+            {state === "expanded" && (
+              <div className="flex flex-col min-w-0 leading-tight">
+                <span className="text-sm font-semibold truncate">AiBE</span>
+                <span className="text-xs text-muted-foreground truncate capitalize">
+                  {currentModeData.label}
+                </span>
+              </div>
+            )}
+          </button>
+          <SidebarTrigger className="shrink-0" />
         </div>
 
         {/* Mode switcher */}
@@ -286,8 +302,6 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarSeparator />
 
       {state === "expanded" && (
         <SidebarContent className="px-2 pt-2">
