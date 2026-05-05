@@ -263,10 +263,10 @@ export function AppSidebar() {
                   tooltip={currentModeData.label}
                 >
                   <ModeIcon className="size-4 shrink-0" />
-                  <span className="flex-1 min-w-0 text-left text-sm font-semibold truncate">
+                  <span className="flex-1 min-w-0 text-left text-sm font-semibold truncate group-data-[collapsible=icon]:hidden">
                     {currentModeData.label}
                   </span>
-                  <ChevronsUpDown className="size-4 shrink-0 ml-1" />
+                  <ChevronsUpDown className="size-4 shrink-0 ml-1 group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
