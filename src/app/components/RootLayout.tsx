@@ -80,7 +80,7 @@ export function RootLayout() {
 
     const loadPrototypeConfig = async () => {
       try {
-        const response = await fetch('/prototype-config.json', { cache: 'no-store' });
+        const response = await fetch(`${import.meta.env.BASE_URL}prototype-config.json`, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Failed to fetch prototype config');
         }
