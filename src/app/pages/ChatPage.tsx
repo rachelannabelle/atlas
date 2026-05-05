@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router';
 import { ChatInterface } from '../components/ChatInterface';
-import { ChatL1PrimaryNavigation } from '../components/ChatL1PrimaryNavigation';
 import { useAppContext } from '../context';
 
 export function ChatPage() {
@@ -20,17 +19,12 @@ export function ChatPage() {
 
   return (
     <div className="relative h-full flex overflow-hidden">
-      <ChatL1PrimaryNavigation
-        chats={chats}
-        activeChatId={activeChatId}
-        onChatSelect={(chatId) => navigate(`/chat/${chatId}`)}
-      />
       <div className="flex-1 min-w-0">
         <ChatInterface
           selectedBuilding={selectedBuilding}
           selectedScholar={selectedScholar}
           setSelectedScholar={setSelectedScholar}
-          onModuleSelect={(moduleId, moduleName) => {
+          onModuleSelect={(moduleId, _moduleName) => {
             if (moduleId) {
               setSelectedModule(moduleId);
               navigate(`/modules/${moduleId}`);

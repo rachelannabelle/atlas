@@ -1,5 +1,7 @@
 import { TopHeader } from './TopHeader';
+import { AppSidebar } from './AppSidebar';
 import { Toaster } from './ui/sonner';
+import { SidebarProvider } from './ui/sidebar';
 import { useState, useCallback, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import type { Chat, Message, AppContextType, FileData } from '../types';
@@ -309,11 +311,12 @@ export function RootLayout() {
                 setIsDarkMode={setIsDarkMode}
                 currentView={currentView}
               />
-              <div className="flex flex-1 overflow-hidden">
-                <div className="flex-1 overflow-hidden">
+              <SidebarProvider className="flex-1 min-h-0 overflow-hidden">
+                <AppSidebar />
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <Outlet context={context} />
                 </div>
-              </div>
+              </SidebarProvider>
             </div>
             {/* Show FAB on all pages except chat */}
             {currentView !== 'chat' && (

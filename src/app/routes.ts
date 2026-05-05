@@ -1,9 +1,10 @@
-import { createBrowserRouter } from 'react-router';
+import { createHashRouter } from 'react-router';
 import { RootLayout } from './components/RootLayout';
 import { ChatPage } from './pages/ChatPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { SearchPage } from './pages/SearchPage';
 import { QuotationPage } from './pages/QuotationPage';
+import { PlaceholderPage } from './pages/PlaceholderPage';
 import { StorybookLayout } from './pages/storybook/StorybookLayout';
 import { OverviewPage } from './pages/storybook/OverviewPage';
 import { ColorsPage } from './pages/storybook/ColorsPage';
@@ -20,7 +21,7 @@ import { DropdownsPage } from './pages/storybook/DropdownsPage';
 import { AvatarsPage } from './pages/storybook/AvatarsPage';
 import { TooltipsPage } from './pages/storybook/TooltipsPage';
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/storybook',
     Component: StorybookLayout,
@@ -57,6 +58,14 @@ export const router = createBrowserRouter([
       { path: 'documents', Component: DocumentsPage },
       { path: 'search', Component: SearchPage },
       { path: 'quotations', Component: QuotationPage },
+
+      // Scholar placeholders
+      { path: 'scholar/categories', Component: PlaceholderPage },
+      { path: 'scholar/artifacts', Component: PlaceholderPage },
+
+      // Operator placeholders
+      { path: 'operator/analysis', Component: PlaceholderPage },
+      { path: 'operator/workflows', Component: PlaceholderPage },
 
       // Catch-all
       { path: '*', Component: ChatPage },
