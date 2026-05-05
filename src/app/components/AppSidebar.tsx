@@ -1,9 +1,9 @@
-import { useState } from "react"
 import { useNavigate, useLocation } from "react-router"
-import { ChevronsUpDown, Plus, MessageSquare, FolderOpen } from "lucide-react"
+import { ChevronsUpDown, Plus, FolderOpen, BookOpen, Network } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -12,13 +12,17 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
 } from "./ui/sidebar"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import {
   Select,
@@ -36,11 +40,13 @@ const MODES = [
     id: "scholar" as const,
     label: "Scholar",
     subtitle: "RAG-based knowledge query + quotation generation",
+    Icon: BookOpen,
   },
   {
     id: "operator" as const,
     label: "Operator",
     subtitle: "IoT sensor analysis + work order management",
+    Icon: Network,
   },
 ]
 
@@ -63,17 +69,176 @@ const PLACEHOLDER_WORKFLOW_ITEMS = [
   "Lift B out of service — fault code E04",
 ]
 
-export function AppSidebar() {
-  const [mode, setMode] = useState<Mode>("scholar")
+function ModeContent({ mode }: { mode: Mode }) {
   const { chats, activeChatId } = useAppContext()
   const navigate = useNavigate()
   const location = useLocation()
 
-  const currentMode = MODES.find((m) => m.id === mode)!
+  const scholarTab = location.pathname.startsWith("/scholar/artifacts")
+    ? "artifacts"
+    : "chats"
+  const operatorTab = location.pathname.startsWith("/operator/workflows")
+    ? "workflows"
+    : "analysis"
+
+  if (mode === "scholar") {
+    return (
+      <Tabs
+        key="scholar"
+        value={scholarTab}
+        onValueChange={(v) =>
+          navigate(v === "artifacts" ? "/scholar/artifacts" : "/")
+        }
+        className="w-full"
+      >
+        <TabsList className="w-full">
+          <TabsTrigger value="chats" className="flex-1">Chats</TabsTrigger>
+          <TabsTrigger value="artifacts" className="flex-1">Artifacts</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chats" className="mt-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate("/")}
+                isActive={location.pathname === "/"}
+              >
+                <Plus className="size-4 shrink-0" />
+                <span>New Chat</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate("/scholar/categories")}
+                isActive={location.pathname === "/scholar/categories"}
+              >
+                <FolderOpen className="size-4 shrink-0" />
+                <span>Categories</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+
+          {chats.length > 0 && (
+            <SidebarGroup className="px-0 pt-2">
+              <SidebarGroupLabel>Recent</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {chats.map((chat) => (
+                    <SidebarMenuItem key={chat.id}>
+                      <SidebarMenuButton
+                        isActive={chat.id === activeChatId}
+                        onClick={() => navigate(`/chat/${chat.id}`)}
+                      >
+                        <span className="truncate">{chat.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </TabsContent>
+
+        <TabsContent value="artifacts" className="mt-2 flex flex-col gap-3">
+          <Select defaultValue="sor">
+            <SelectTrigger className="w-full" size="sm">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {ARTIFACT_CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value} disabled={cat.disabled}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate("/scholar/artifacts")}
+                isActive={location.pathname.startsWith("/scholar/artifacts")}
+              >
+                <span className="truncate">Quotation — Office refurb L3</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </TabsContent>
+      </Tabs>
+    )
+  }
 
   return (
-    <Sidebar collapsible="none" className="w-64 border-r flex-shrink-0">
+    <Tabs
+      key="operator"
+      value={operatorTab}
+      onValueChange={(v) =>
+        navigate(v === "workflows" ? "/operator/workflows" : "/operator/analysis")
+      }
+      className="w-full"
+    >
+      <TabsList className="w-full">
+        <TabsTrigger value="analysis" className="flex-1">Analysis</TabsTrigger>
+        <TabsTrigger value="workflows" className="flex-1">Workflows</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="analysis" className="mt-2">
+        <SidebarMenu>
+          {PLACEHOLDER_ANALYSIS_ITEMS.map((title) => (
+            <SidebarMenuItem key={title}>
+              <SidebarMenuButton
+                onClick={() => navigate("/operator/analysis")}
+                isActive={location.pathname === "/operator/analysis"}
+              >
+                <span className="truncate">{title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </TabsContent>
+
+      <TabsContent value="workflows" className="mt-2">
+        <SidebarMenu>
+          {PLACEHOLDER_WORKFLOW_ITEMS.map((title) => (
+            <SidebarMenuItem key={title}>
+              <SidebarMenuButton
+                onClick={() => navigate("/operator/workflows")}
+                isActive={location.pathname === "/operator/workflows"}
+              >
+                <span className="truncate">{title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </TabsContent>
+    </Tabs>
+  )
+}
+
+export function AppSidebar() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { state } = useSidebar()
+
+  const currentMode: Mode =
+    location.pathname.startsWith("/operator") ? "operator" : "scholar"
+  const currentModeData = MODES.find((m) => m.id === currentMode)!
+  const ModeIcon = currentModeData.Icon
+
+  const setMode = (mode: Mode) => {
+    if (mode === "operator") navigate("/operator/analysis")
+    else navigate("/")
+  }
+
+  return (
+    <Sidebar collapsible="icon">
       <SidebarHeader className="pb-0">
+        {/* Collapse toggle top-right */}
+        <div className="flex justify-end px-1 pt-1">
+          <SidebarTrigger />
+        </div>
+
+        {/* Mode switcher */}
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -81,20 +246,22 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  tooltip={currentModeData.label}
                 >
-                  <div className="flex flex-col flex-1 min-w-0 text-left leading-tight">
-                    <span className="text-sm font-semibold truncate">
-                      {currentMode.label}
+                  <ModeIcon className="size-4 shrink-0" />
+                  <div className="flex flex-col flex-1 min-w-0 text-left leading-snug">
+                    <span className="text-sm font-semibold">
+                      {currentModeData.label}
                     </span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {currentMode.subtitle}
+                    <span className="text-xs text-muted-foreground whitespace-normal">
+                      {currentModeData.subtitle}
                     </span>
                   </div>
-                  <ChevronsUpDown className="size-4 shrink-0 ml-auto" />
+                  <ChevronsUpDown className="size-4 shrink-0 ml-1" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                className="w-64 rounded-lg"
                 align="start"
                 side="bottom"
                 sideOffset={4}
@@ -103,12 +270,15 @@ export function AppSidebar() {
                   <DropdownMenuItem
                     key={m.id}
                     onClick={() => setMode(m.id)}
-                    className="flex-col items-start gap-0 p-2"
+                    className="gap-2 p-2"
                   >
-                    <span className="font-medium text-sm">{m.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {m.subtitle}
-                    </span>
+                    <m.Icon className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">{m.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {m.subtitle}
+                      </span>
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -119,131 +289,46 @@ export function AppSidebar() {
 
       <SidebarSeparator />
 
-      <SidebarContent className="px-2 pt-2">
-        {mode === "scholar" ? (
-          <Tabs defaultValue="chats" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="chats" className="flex-1">Chats</TabsTrigger>
-              <TabsTrigger value="artifacts" className="flex-1">Artifacts</TabsTrigger>
-            </TabsList>
+      {state === "expanded" && (
+        <SidebarContent className="px-2 pt-2">
+          <ModeContent mode={currentMode} />
+        </SidebarContent>
+      )}
 
-            <TabsContent value="chats" className="mt-2">
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => navigate("/")}
-                    isActive={location.pathname === "/"}
-                  >
-                    <Plus className="size-4" />
-                    <span>New Chat</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => navigate("/scholar/categories")}
-                    isActive={location.pathname === "/scholar/categories"}
-                  >
-                    <FolderOpen className="size-4" />
-                    <span>Categories</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-
-              {chats.length > 0 && (
-                <SidebarGroup className="px-0 pt-2">
-                  <SidebarGroupLabel>Recent</SidebarGroupLabel>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {chats.map((chat) => (
-                        <SidebarMenuItem key={chat.id}>
-                          <SidebarMenuButton
-                            isActive={chat.id === activeChatId}
-                            onClick={() => navigate(`/chat/${chat.id}`)}
-                            className="truncate"
-                          >
-                            <MessageSquare className="size-4 shrink-0" />
-                            <span className="truncate">{chat.title}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              )}
-            </TabsContent>
-
-            <TabsContent value="artifacts" className="mt-2 flex flex-col gap-3">
-              <Select defaultValue="sor">
-                <SelectTrigger className="w-full" size="sm">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ARTIFACT_CATEGORIES.map((cat) => (
-                    <SelectItem
-                      key={cat.value}
-                      value={cat.value}
-                      disabled={cat.disabled}
-                    >
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => navigate("/scholar/artifacts")}
-                    isActive={location.pathname.startsWith("/scholar/artifacts")}
-                  >
-                    <MessageSquare className="size-4 shrink-0" />
-                    <span className="truncate">Quotation — Office refurb L3</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <Tabs defaultValue="analysis" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="analysis" className="flex-1">Analysis</TabsTrigger>
-              <TabsTrigger value="workflows" className="flex-1">Workflows</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="analysis" className="mt-2">
-              <SidebarMenu>
-                {PLACEHOLDER_ANALYSIS_ITEMS.map((title) => (
-                  <SidebarMenuItem key={title}>
-                    <SidebarMenuButton
-                      onClick={() => navigate("/operator/analysis")}
-                      isActive={location.pathname === "/operator/analysis"}
-                    >
-                      <MessageSquare className="size-4 shrink-0" />
-                      <span className="truncate">{title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </TabsContent>
-
-            <TabsContent value="workflows" className="mt-2">
-              <SidebarMenu>
-                {PLACEHOLDER_WORKFLOW_ITEMS.map((title) => (
-                  <SidebarMenuItem key={title}>
-                    <SidebarMenuButton
-                      onClick={() => navigate("/operator/workflows")}
-                      isActive={location.pathname === "/operator/workflows"}
-                    >
-                      <MessageSquare className="size-4 shrink-0" />
-                      <span className="truncate">{title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </TabsContent>
-          </Tabs>
-        )}
-      </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg" tooltip="Account">
+                  <Avatar className="size-8 rounded-lg shrink-0">
+                    <AvatarFallback className="rounded-lg text-xs">R</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">Rachel</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      design@rachelc.cx
+                    </span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4 shrink-0" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                align="start"
+                className="w-56 rounded-lg"
+              >
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem>Help</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Sign out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }

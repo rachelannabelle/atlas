@@ -1,4 +1,4 @@
-import { TopHeader } from './TopHeader';
+import React from 'react';
 import { AppSidebar } from './AppSidebar';
 import { Toaster } from './ui/sonner';
 import { SidebarProvider } from './ui/sidebar';
@@ -301,17 +301,11 @@ export function RootLayout() {
       <AppContext.Provider value={context}>
         <PrototypeConfigContext.Provider value={{ config: prototypeConfig }}>
           <div className={isDarkMode ? 'dark' : ''}>
-            <div className="flex flex-col h-screen">
-              <TopHeader
-                selectedBuilding={selectedBuilding}
-                setSelectedBuilding={setSelectedBuilding}
-                selectedRole={selectedRole}
-                setSelectedRole={setSelectedRole}
-                isDarkMode={isDarkMode}
-                setIsDarkMode={setIsDarkMode}
-                currentView={currentView}
-              />
-              <SidebarProvider className="flex-1 min-h-0 overflow-hidden">
+            <div className="flex h-screen overflow-hidden">
+              <SidebarProvider
+                className="flex-1 min-h-0 overflow-hidden"
+                style={{ "--sidebar-width": "10rem" } as React.CSSProperties}
+              >
                 <AppSidebar />
                 <div className="flex-1 min-w-0 overflow-hidden">
                   <Outlet context={context} />
