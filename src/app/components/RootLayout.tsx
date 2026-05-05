@@ -304,7 +304,7 @@ export function RootLayout() {
             <div className="flex h-screen overflow-hidden">
               <SidebarProvider
                 className="flex-1 min-h-0 overflow-hidden"
-                style={{ "--sidebar-width": "10rem" } as React.CSSProperties}
+                style={{ "--sidebar-width": "20vw" } as React.CSSProperties}
               >
                 <AppSidebar />
                 <div className="flex-1 min-w-0 overflow-hidden">

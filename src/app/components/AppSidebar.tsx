@@ -263,7 +263,7 @@ export function AppSidebar() {
               <DropdownMenuContent
                 className="w-64 rounded-lg"
                 align="start"
-                side="bottom"
+                side="right"
                 sideOffset={4}
               >
                 {MODES.map((m) => (
