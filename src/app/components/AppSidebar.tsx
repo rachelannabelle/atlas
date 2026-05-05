@@ -233,10 +233,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="pb-0 gap-0">
         {/* HomeDiv — app logo + name + tier, collapses to icon only */}
-        <div className="flex items-center gap-1 px-1 pt-1 pb-1">
+        <div className="flex items-center gap-1 px-1 pt-1 pb-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 flex-1 min-w-0 rounded-md px-1 py-1 hover:bg-sidebar-accent transition-colors text-left"
+            className="flex items-center gap-2 flex-1 min-w-0 rounded-md px-1 py-1 hover:bg-sidebar-accent transition-colors text-left group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
           >
             <div className="size-7 rounded-md bg-foreground text-background flex items-center justify-center shrink-0">
               <Building2 className="size-4" />
@@ -259,7 +259,7 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
                   tooltip={currentModeData.label}
                 >
                   <ModeIcon className="size-4 shrink-0" />
@@ -296,11 +296,9 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      {state === "expanded" && (
-        <SidebarContent className="px-2 pt-2">
-          <ModeContent mode={currentMode} />
-        </SidebarContent>
-      )}
+      <SidebarContent className="px-2 pt-2">
+        {state === "expanded" && <ModeContent mode={currentMode} />}
+      </SidebarContent>
 
       <SidebarFooter>
         <SidebarMenu>
