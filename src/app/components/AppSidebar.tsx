@@ -12,7 +12,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarSeparator,
-  SidebarTrigger,
   useSidebar,
 } from "./ui/sidebar"
 import {
@@ -251,7 +250,6 @@ export function AppSidebar() {
               </div>
             )}
           </button>
-          <SidebarTrigger className="shrink-0" />
         </div>
 
         {/* Mode switcher */}
@@ -265,14 +263,9 @@ export function AppSidebar() {
                   tooltip={currentModeData.label}
                 >
                   <ModeIcon className="size-4 shrink-0" />
-                  <div className="flex flex-col flex-1 min-w-0 text-left leading-snug">
-                    <span className="text-sm font-semibold">
-                      {currentModeData.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground whitespace-normal">
-                      {currentModeData.subtitle}
-                    </span>
-                  </div>
+                  <span className="flex-1 min-w-0 text-left text-sm font-semibold truncate">
+                    {currentModeData.label}
+                  </span>
                   <ChevronsUpDown className="size-4 shrink-0 ml-1" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

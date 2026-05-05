@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppSidebar } from './AppSidebar';
 import { Toaster } from './ui/sonner';
-import { SidebarProvider } from './ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from './ui/sidebar';
 import { useState, useCallback, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import type { Chat, Message, AppContextType, FileData } from '../types';
@@ -307,8 +307,13 @@ export function RootLayout() {
                 style={{ "--sidebar-width": "20vw" } as React.CSSProperties}
               >
                 <AppSidebar />
-                <div className="flex-1 min-w-0 overflow-hidden">
-                  <Outlet context={context} />
+                <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
+                  <div className="p-2">
+                    <SidebarTrigger />
+                  </div>
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    <Outlet context={context} />
+                  </div>
                 </div>
               </SidebarProvider>
             </div>
