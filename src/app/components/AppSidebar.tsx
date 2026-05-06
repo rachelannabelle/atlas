@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router"
-import { ChevronsUpDown, Plus, FolderOpen, BookOpen, Network, Building2 } from "lucide-react"
+import { ChevronsUpDown, Plus, FolderOpen, BookOpen, Network, Building2, Settings, HelpCircle, LogOut, ChevronRight } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -19,9 +19,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import {
   Select,
@@ -139,29 +141,37 @@ function ModeContent({ mode }: { mode: Mode }) {
         </TabsContent>
 
         <TabsContent value="artifacts" className="mt-2 flex flex-col gap-3">
-          <Select defaultValue="sor">
-            <SelectTrigger className="w-full" size="sm">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {ARTIFACT_CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value} disabled={cat.disabled}>
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-1.5">
+            <SidebarGroupLabel>Select category</SidebarGroupLabel>
+            <Select defaultValue="sor">
+              <SelectTrigger className="w-full" size="sm">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {ARTIFACT_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value} disabled={cat.disabled}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => navigate("/scholar/artifacts")}
-                isActive={location.pathname.startsWith("/scholar/artifacts")}
-              >
-                <span className="truncate">Quotation — Office refurb L3</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <SidebarGroup className="px-0 pt-0">
+            <SidebarGroupLabel>Recents</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate("/scholar/artifacts")}
+                    isActive={location.pathname.startsWith("/scholar/artifacts")}
+                  >
+                    <span className="truncate">Quotation — Office refurb L3</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </TabsContent>
       </Tabs>
     )
@@ -306,13 +316,13 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" tooltip="Account">
-                  <Avatar className="size-8 rounded-lg shrink-0">
-                    <AvatarFallback className="rounded-lg text-xs">R</AvatarFallback>
-                  </Avatar>
+                  <div className="flex size-8 items-center justify-center rounded-lg shrink-0">
+                    <Building2 className="size-4" />
+                  </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Rachel</span>
+                    <span className="truncate font-semibold">The Gear</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      design@rachelc.cx
+                      Tom Smith
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4 shrink-0" />
@@ -323,12 +333,47 @@ export function AppSidebar() {
                 align="start"
                 className="w-56 rounded-lg"
               >
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  Settings
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-center gap-2">
+                    <Building2 className="size-4" />
+                    <span>Select Buildings</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-48 rounded-lg">
+                    <DropdownMenuItem className="flex items-center gap-2 bg-sidebar-accent text-sidebar-accent-foreground focus:bg-sidebar-accent focus:text-sidebar-accent-foreground">
+                      <Building2 className="size-4" />
+                      <span>The Gear</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Building2 className="size-4" />
+                      <span>Building 1</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Building2 className="size-4" />
+                      <span>Building 2</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Building2 className="size-4" />
+                      <span>Building 3</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem onClick={() => navigate("/scholar/categories")} className="flex items-center gap-2">
+                  <BookOpen className="size-4" />
+                  <span>Scholar Knowledge</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Help</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")} className="flex items-center gap-2">
+                  <Settings className="size-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <HelpCircle className="size-4" />
+                  <span>Help</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2 text-destructive focus:text-destructive">
+                  <LogOut className="size-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

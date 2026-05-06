@@ -60,12 +60,15 @@ export const router = createHashRouter([
       { path: 'quotations', Component: QuotationPage },
 
       // Scholar placeholders
-      { path: 'scholar/categories', Component: PlaceholderPage },
+      { path: 'scholar/categories', Component: DocumentsPage },
       { path: 'scholar/artifacts', Component: PlaceholderPage },
 
       // Operator placeholders
       { path: 'operator/analysis', Component: PlaceholderPage },
       { path: 'operator/workflows', Component: PlaceholderPage },
+
+      // Settings
+      { path: 'settings', Component: PlaceholderPage },
 
       // Catch-all
       { path: '*', Component: ChatPage },
